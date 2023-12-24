@@ -14,38 +14,39 @@ function App() {
     if (inputRef.current.value === "") {
       return;
     }
-    setLoading(true);
-
-    const response = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apikey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: "You are a senior developer with 15 years of experience, your job is to critique codes and suggest changes,also be funny when you find basic mistakes,if you find a question that is too simple then say you should know this." },
-            { role: "user", content: inputRef.current.value },
-          ],
-        }),
-      }
-    );
-
     
-//You are a helpful assistant.
-if (response.ok) {
-  const data = await response.json();
-  const generatedText = data.choices[0].message.content;
-  setGeneratedText(generatedText);
-} else {
-  console.error("API error: ${response.status} - ${response.statusText}");
-}
-
-setLoading(false);
-};
+    setLoading(true);
+  
+    try {
+      const response = await fetch(
+        "https://api.openai.com/v1/engines/text-davinci-002/completions", // GPT-3.5 Turbo endpoint
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apikey}`,
+          },
+          body: JSON.stringify({
+            prompt: inputRef.current.value,
+            max_tokens: 150,
+          }),
+        }
+      );
+  
+      if (response.ok) {
+        const data = await response.json();
+        const generatedText = data.choices[0].text;
+        setGeneratedText(generatedText);
+      } else {
+        console.error(`API error: ${response.status} - ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error during API request:", error);
+    }
+  
+    setLoading(false);
+  };
+  
 
 
 
